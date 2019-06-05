@@ -4,6 +4,8 @@ import processing.core.PApplet;
 
 import java.util.ArrayList;
 
+import static hu.johetajava.App.world;
+
 public class Drawer extends PApplet {
 
     static final String title = "Processing...";
@@ -17,14 +19,19 @@ public class Drawer extends PApplet {
     public void settings() {
         App.drawer = this;
 
-        size(App.world.width, App.world.height);
+        size(world.width, world.height);
         colors = new Colors("dark");
     }
 
     public void draw() {
         background(0, 0, 0, 1);
 
-        App.onTick();
+        if (world.tick < world.lifetime) {
+            App.onTick();
+        }
+        else{
+            App.inTheEndOfTheWorld();
+        }
     }
 
     public void displayEntity(Entity entity) {

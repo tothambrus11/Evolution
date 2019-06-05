@@ -37,7 +37,7 @@ public class World {
 
     void populate(int initialPopulationSize) {
         for (int i = 0; i < initialPopulationSize; i++) {
-            generation.add(new Entity(50, getRandomPosition(), 1, Entity.getRandomDeltaDirs(lifetime), 10));
+            generation.add(new Entity(50, new Position(100,100), 1, Entity.getRandomDeltaDirs(lifetime), 10));
         }
     }
 

@@ -1,5 +1,7 @@
 package hu.johetajava;
 
+import java.util.Arrays;
+
 import static hu.johetajava.App.drawer;
 import static hu.johetajava.App.world;
 import static java.lang.Math.*;
@@ -52,6 +54,7 @@ public class Entity {
     public void die() {
         this.isAlive = false;
         this.score = getScore();
+        System.out.println("Valaki meghalt " + score);
     }
 
     float getScore() {
@@ -60,5 +63,26 @@ public class Entity {
 
     public float getDistance(Entity entity) {
         return Position.getDistance(position, entity.position);
+    }
+
+    @Override
+    public String toString() {
+        return "Entity{" +
+                "extent=" + extent +
+                ", position=" + position +
+                ", speed=" + speed +
+                ", deltaDirs=" + Arrays.toString(deltaDirs) +
+                ", turningSpeed=" + turningSpeed +
+                ", isAlive=" + isAlive +
+                ", score=" + score +
+                '}';
+    }
+
+    public Entity clone_() {
+        return new Entity(extent, position.clone_(), speed, deltaDirs, turningSpeed);
+    }
+
+    public Entity mutate() {
+        return null;
     }
 }
