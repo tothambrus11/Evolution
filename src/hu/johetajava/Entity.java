@@ -9,6 +9,7 @@ import static java.lang.Math.*;
 public class Entity {
 
     public float extent;
+    public int ticks;
     Position position;
     float speed;
 
@@ -17,32 +18,49 @@ public class Entity {
     float turningSpeed;
     boolean isAlive = true;
     float score;
+    public float mutationRate;
 
-    public Entity(float extent, Position position, float speed, float[] deltaDirs, float turningSpeed) {
+    Position startPos;
+    float startSpeed;
+    float startTurningSpeed;
+
+    public Entity(float extent, Position position, float speed, float[] deltaDirs, float turningSpeed, float mutationRate) {
         this.extent = extent;
         this.position = position;
         this.speed = speed;
         this.deltaDirs = deltaDirs;
         this.turningSpeed = turningSpeed;
+        this.mutationRate = mutationRate;
+        startPos = position.clone_();
+        startSpeed = speed;
+        startTurningSpeed = turningSpeed;
+
     }
 
-    static float[] getRandomDeltaDirs(int tickCount){
+    public void reset() {
+        position.x = 100;
+        position.y = 100;
+        position.dir = 0;
+        isAlive = true;
+    }
+
+    static float[] getRandomDeltaDirs(int tickCount) {
         float[] dirs = new float[tickCount];
-        for(int tick = 0; tick < tickCount; tick++){
+        for (int tick = 0; tick < tickCount; tick++) {
             dirs[tick] = getRandomDeltaDir();
         }
         return dirs;
     }
 
-    static float getRandomDeltaDir(){
+    static float getRandomDeltaDir() {
         return App.random(-1, 1);
     }
 
     public static float getRandomDir() {
-        return App.random(1)*360;
+        return App.random(1) * 360;
     }
 
-    void liveTick(){
+    void liveTick() {
         float deltaDir = deltaDirs[world.tick];
         position.dir += deltaDir * turningSpeed;
         position.dir %= 360;
@@ -54,16 +72,18 @@ public class Entity {
     public void die() {
         this.isAlive = false;
         this.score = getScore();
-        System.out.println("Valaki meghalt " + score);
+        ticks = world.tick;
+
     }
 
     float getScore() {
-        return world.tick;
+        return 10000 /( Position.getDistance(position, new Position(drawer.width - 80, drawer.height / 2.0f))*5) / world.tick;
     }
 
     public float getDistance(Entity entity) {
         return Position.getDistance(position, entity.position);
     }
+
 
     @Override
     public String toString() {
@@ -75,14 +95,31 @@ public class Entity {
                 ", turningSpeed=" + turningSpeed +
                 ", isAlive=" + isAlive +
                 ", score=" + score +
+                ", mutationRate=" + mutationRate +
                 '}';
     }
 
     public Entity clone_() {
-        return new Entity(extent, position.clone_(), speed, deltaDirs, turningSpeed);
+        Entity clone = new Entity(extent, position.clone_(), speed, null, turningSpeed, mutationRate);
+
+        clone.deltaDirs = new float[deltaDirs.length];
+        for (int i = 0; i < clone.deltaDirs.length; i++) {
+            clone.deltaDirs[i] = deltaDirs[i];
+        }
+        return clone;
     }
 
     public Entity mutate() {
-        return null;
+        for (int i = 0; i < deltaDirs.length; i++) {
+            deltaDirs[i] += drawer.randomGaussian() * mutationRate;
+            while (deltaDirs[i] > 1) {
+                deltaDirs[i]--;
+            }
+            while (deltaDirs[i] < -1) {
+                deltaDirs[i]++;
+            }
+        }
+
+        return this;
     }
 }

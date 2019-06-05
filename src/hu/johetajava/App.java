@@ -3,9 +3,8 @@ package hu.johetajava;
 import processing.core.PApplet;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Random;
+
 
 public class App {
     static Drawer drawer;
@@ -17,20 +16,19 @@ public class App {
     public static void main(String[] args) {
         random = new Random();
 
-        world = new World(40, 400, 1600, 900, 7);
+        world = new World(400, 2000, 900, 600, 3);
         PApplet.main(Drawer.class, args);
     }
 
-    public static void setup() {
-
-    }
 
     public static void onTick() {
         for (Entity obstacle : world.obstacles) {
             drawer.drawObstacle(obstacle);
         }
 
-        for (Entity entity : world.generation) {
+        ArrayList<Entity> generation = world.generation;
+        for (int i = generation.size() - 1; i >= 0; i--) {
+            Entity entity = generation.get(i);
             drawer.displayEntity(entity);
         }
 
@@ -40,10 +38,17 @@ public class App {
             }
         }
 
-        ArrayList<Entity> entitiesToRemove = new ArrayList<>();
         for (Entity entity : world.generation) {
-            if(entity.isAlive) {
+            if (entity.isAlive) {
                 if (NaturalSelection.isDead(entity)) {
+                    entity.die();
+                }
+            }
+        }
+
+        for (Entity entity : world.generation) {
+            if (entity.isAlive) {
+                if (Position.getDistance(entity.position, new Position(drawer.width - 60, drawer.height / 2.0f)) < 20 + entity.extent){
                     entity.die();
                 }
             }
@@ -84,48 +89,75 @@ public class App {
     }
 
     public static void nextGeneration() {
+
         ArrayList<Entity> nextGeneration = new ArrayList<>();
 
+        // SORTING
         world.generation.sort((o1, o2) -> (int) ((o2.score - o1.score) * 1000000));
-        for(Entity entity : world.generation){
-            System.out.println(entity.score);
+
+        // DISPLAYING SCORES
+        for (int i = 0; i < world.generation.size(); i++) {
+            Entity entity = world.generation.get(i);
+            //System.out.println(i + ". : " + entity.score);
         }
 
-        // A legjobb 5% átöröklődök
-        for(int i = 0; i <= world.generation.size()* 0.05; i++){
+        System.out.println("BEST SCORE: " + world.generation.get(0).score);
+        System.out.println("SECOND BEST SCORE: " + world.generation.get(1).score);
+
+
+        drawer.delay(200);
+        // COPY the best entities
+        for (int i = 0; i < world.generation.size() * 0.2; i++) {
+            //System.out.println("beee   " + i);
             nextGeneration.add(world.generation.get(i));
+
         }
 
-        int totalWeight = 0;
+        System.out.println("HELLLLLLLLO ========");
+        System.out.println(world.generation.get(0));
+
+        System.out.println(world.generation.get(0));
+
+        // FILL the remaining space
+        int i = 0;
+
+        float totalWeight = 0;
         for (Entity entity : world.generation) {
             totalWeight += entity.score;
         }
 
-        while (nextGeneration.size() < world.generation.size()){
-            // Compute the total weight of all items together
-
-            // Now choose a random item
-            Entity randomEntity = null;
-
+        while (nextGeneration.size() < world.generation.size()) {
+            int randomIndex = -1;
             double random = Math.random() * totalWeight;
-            for (Entity entity : world.generation)
-            {
-                random -= entity.score;
-                if (random <= 0.0)
-                {
-                    randomEntity = entity;
+            for (int j = 0; j < world.generation.size(); ++j) {
+                random -= world.generation.get(j).score;
+
+                if (random <= 0.0d) {
+                    randomIndex = i;
                     break;
                 }
             }
+            Entity randomEntity = world.generation.get(randomIndex).clone_();
 
-            if (randomEntity != null) {
-                nextGeneration.add(randomEntity.clone_().mutate());
-            }
-            else{
-                System.err.println("Rossz a random");
-            }
+            randomEntity.mutate();
+
+            nextGeneration.add(randomEntity);
+
+            i++;
         }
-        System.exit(0);
+
+        // RESET
+        for (Entity entity : nextGeneration) {
+            entity.reset();
+        }
+
+        world.generation = nextGeneration;
+        System.out.println(world.generation.get(0));
+        world.generation.sort((o1, o2) -> (int) ((o2.score - o1.score) * 1000000));
+
+
+        System.out.println("=========================================");
+        world.tick = 0;
     }
 
     public static void inTheEndOfTheWorld() {

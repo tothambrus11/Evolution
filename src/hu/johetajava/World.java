@@ -2,8 +2,6 @@ package hu.johetajava;
 
 import java.util.ArrayList;
 
-import static hu.johetajava.App.drawer;
-
 public class World {
 
     public int tick = 0;
@@ -31,13 +29,13 @@ public class World {
 
     private void createObstacles(int obstacleCount) {
         for (int i = 0; i < obstacleCount; i++) {
-            obstacles.add(new Entity(80, getRandomPosition(), 0, new float[0], 0));
+            obstacles.add(new Entity(80, getRandomPosition(), 0, new float[0], 0, 0));
         }
     }
 
     void populate(int initialPopulationSize) {
         for (int i = 0; i < initialPopulationSize; i++) {
-            generation.add(new Entity(50, new Position(100,100), 1, Entity.getRandomDeltaDirs(lifetime), 10));
+            generation.add(new Entity(10, new Position(100, 100), 30, Entity.getRandomDeltaDirs(lifetime), 20, 0.1f));
         }
     }
 
@@ -45,4 +43,13 @@ public class World {
         return new Position(App.random(width), App.random(height), Entity.getRandomDir());
     }
 
+    boolean areAllDead(){
+        for(Entity entity : generation){
+            if(entity.isAlive){
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
